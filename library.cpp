@@ -7,3 +7,6 @@ Motor_Emulator::Motor_Emulator(int Volatge, int No_Load_Speed_RPM, double No_Loa
                                double Torque_Consatant_mNm_A, int Speed_Constant_rpm_mNm, double Rotor_Inertia_gcm2) {
 
 }
+void Motor_Emulator::PORTD_Interrupt() {
+    raise(SIGINT);
+}

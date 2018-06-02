@@ -2,12 +2,12 @@
 #define MOTOR_EMULATOR_LIBRARY_H
 
 #include <csignal>
-
+#include <windows.h>
 class Motor_Emulator {
 
 public:
     Motor_Emulator(int Volatge, int No_Load_Speed_RPM, double No_Load_Current_mA, double Stall_Current_A,
-                       double Terminal_Resistance_ohm, double Terminal_Inductance_mH, double Torque_Consatant_mNm_A,
+                       double Terminal_Resistance_ohm, double Terminal_Inductance_mH, double Torque_Constant_mNm_A,
                        int Speed_Constant_rpm_mNm, double Rotor_Inertia_gcm2);
     enum time_scale{seconds, milliseconds, miniutes};
     enum distance_scale{radians,};
@@ -22,6 +22,13 @@ public:
         Hall_Interrupt = foo;
     };
     void(*Hall_Interrupt)();
+    void PORTD_Interrupt();
+    void Start_Emulation(int Voltage,int PWM);
+    void Pause_Emulation();
+    void Stop_Emulation();
+    void Place_Load_on_motor();
+    void Change_Voltage(int Voltage);
+    void Setup_Interrupts();
 
 
 private:

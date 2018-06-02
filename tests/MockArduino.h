@@ -3,7 +3,13 @@
 
 #include <chrono>
 unsigned long millis(){
-    return (unsigned long)std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::chrono::high_resolution_clock::duration dtn = std::chrono::high_resolution_clock::now().time_since_epoch();
+    return (unsigned long)std::chrono::duration_cast<std::chrono::milliseconds>(dtn);
+}
+
+unsigned long micros(){
+    std::chrono::high_resolution_clock::duration dtn = std::chrono::high_resolution_clock::now().time_since_epoch();
+    return (unsigned long)std::chrono::duration_cast<std::chrono::microseconds>(dtn);
 }
 void cli(){
     //Signal interrupt emulation off
