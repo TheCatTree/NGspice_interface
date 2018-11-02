@@ -36,7 +36,6 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/test_circuts
         ${CMAKE_CURRENT_BINARY_DIR}/test_circuts
-)
 
 target_link_libraries(NGSpice_interface  ngspice)
 
