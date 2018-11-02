@@ -5,7 +5,6 @@
 #include "catch.hpp"
 #include "../library.h"
 #include <cmath>
-#include "MockArduino.h"
 #define byte unsigned char
 void Move_interrupt();
 unsigned char PIND; // Must create the globals for the motor
@@ -58,8 +57,8 @@ char M2_DOM;
 
 SCENARIO("A Single Emulated motor Not attached to anything, with no interrupts"){
     GIVEN("Motor Set as a DCX 10 S Precious Metal Brush 12v"){
-        Motor_Emulator ME(12, 12500, 10.5,0.16,74.9,0.868,8.53,1120,0.071);
-        // Nominal voltage V, No load speed rpm, No load current mA, stall current A, Terminal Resistance ohm, Terminal inductance mH, Torque constant mNm/A, Speed constant rpm/V
+        Motor_Emulator ME(12, 12500, 10.5, 0.16, 74.9, 0.868, 8.53, 1120, 0.071);
+        // Nominal voltage V, No load speed rpm, No load current mA, stall current A, Terminal Resistance ohm, Terminal inductance mH, Torque constant mNm/A, Speed constant rpm/V,rotor inertia
         //Results of spice model PWM 10% incriments
         float Spice_PWM_Current[10] = {13.47,22.46,28.8,30.4,30.3,29,26.32,22.3,17.05,11.11};//MA
         float   Spice_PWM_Speed[10] = {144.13,288.30,432.4,567.4,720.5,838.6,956.6,1074.5,1192.3,1305.7}; //RPM //radians
@@ -72,7 +71,7 @@ SCENARIO("A Single Emulated motor Not attached to anything, with no interrupts")
                 REQUIRE(ME.GetCurrant() == 10.5);
                 REQUIRE(ME.GetSpeed(Motor_Emulator::radians_second) == 12500);
                 REQUIRE(ME.GetDistance(Motor_Emulator::radians) == (12500.0/60.0)*10*2*M_PI );//(RPS * Seconds * 2PI)
-                ME.Stop_Emulation;
+                ME.Stop_Emulation();
             }
         }
 
@@ -80,12 +79,12 @@ SCENARIO("A Single Emulated motor Not attached to anything, with no interrupts")
             for(int i = 0; i<10; i++){
                 ME.Start_Emulation(12,i*10*(2.5));
                 Sleep(10000);
-                ME.Pause_Emulation;
+                ME.Pause_Emulation();
                 THEN("Settings should match Spice values"){
                     REQUIRE(ME.GetCurrant() == Spice_PWM_Current[i]);
                     REQUIRE(ME.GetSpeed(Motor_Emulator::radians_second) == Spice_PWM_Speed[i] );
                     REQUIRE(ME.GetDistance(Motor_Emulator::radians) == ((float)Spice_PWM_Speed[i]/60.0)*10*2*M_PI );//(RPS * Seconds * 2PI)
-                    ME.Stop_Emulation;
+                    ME.Stop_Emulation();
                 }
             }
         }
@@ -94,12 +93,12 @@ SCENARIO("A Single Emulated motor Not attached to anything, with no interrupts")
             ME.Start_Emulation(12,255);
             ME.Place_Load_on_motor();
             Sleep(10000);
-            ME.Pause_Emulation;
+            ME.Pause_Emulation();
             THEN("Motor current should = no load current (mA), and speed = no load speed"){
                 REQUIRE(ME.GetCurrant() == 160 );
                 REQUIRE(ME.GetSpeed(Motor_Emulator::radians_second) == 0 );
                 REQUIRE(ME.GetDistance(Motor_Emulator::radians) == (0/60.0)*10*2*M_PI );//(RPS * Seconds * 2PI)
-                ME.Stop_Emulation;
+                ME.Stop_Emulation();
             }
         }
     }
@@ -107,10 +106,10 @@ SCENARIO("A Single Emulated motor Not attached to anything, with no interrupts")
 
 SCENARIO("Emulated Motor with interrupts threw the signal system"){
     GIVEN("Motor Set as a DCX 10 S Precious Metal Brush 12v"){
-        Motor_Emulator ME(12, 12500, 10.5,0.16,74.9,0.868,8.53,1120,0.071);
-        int patternA[8] ={0,1,1,0,0,1,1,0};
-        int patternB[8] ={0,0,1,1,0,0,1,1};
-        ME.SetHallPattern(patternA, patternB,8); // A signal position 0 - N-1, B signal position 0 -N-1 , Number of positions
+        Motor_Emulator ME(12, 12500, 10.5, 0.16, 74.9, 0.868, 8.53, 1120, 0.071);
+        std::vector<int> patternA ={0,1,1,0,0,1,1,0};
+        std::vector<int> patternB = {0,0,1,1,0,0,1,1};
+        ME.SetHallPattern(patternA, patternB); // A signal position 0 - N-1, B signal position 0 -N-1 , Number of positions
         ME.AttachHallInterrupt(&Move_interrupt);
         ME.Setup_Interrupts();
         M1_Position = 0;
@@ -119,7 +118,7 @@ SCENARIO("Emulated Motor with interrupts threw the signal system"){
         WHEN("Run with no load at 12v for 10 seconds"){
             ME.Start_Emulation(12,255);
             Sleep(10000);
-            ME.Pause_Emulation;
+            ME.Pause_Emulation();
             THEN("Global Position should show an increased value"){
                 REQUIRE(M1_Position==1);//calculated number on interrupts ++
             }
@@ -128,7 +127,7 @@ SCENARIO("Emulated Motor with interrupts threw the signal system"){
         WHEN("Run with no load at 12v for 10 seconds backwards"){
             ME.Start_Emulation(-12,255);
             Sleep(10000);
-            ME.Pause_Emulation;
+            ME.Pause_Emulation();
             THEN("Global Position should show an increased value"){
                 REQUIRE(M1_Position==1);//calculated number on interrupts ++
             }
@@ -140,7 +139,7 @@ SCENARIO("Emulated Motor with interrupts threw the signal system"){
             Sleep(10000);
             ME.Change_Voltage(-12);
             Sleep(3000);
-            ME.Pause_Emulation;
+            ME.Pause_Emulation();
             THEN("Global Position should show an increased value"){
                 REQUIRE(M1_Position==1);//calculated number on interrupts ++
             }
